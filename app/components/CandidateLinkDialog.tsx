@@ -83,7 +83,7 @@ export const CandidateLinkDialog: React.FC<CandidateLinkDialogProps> = ({
   ];
 
   const filteredCandidates = mockCandidates.filter(candidate =>
-    candidate.name.includes(searchText) || candidate.position.includes(searchText)
+    candidate.name.includes(searchText) || (candidate.position?.includes(searchText) ?? false)
   );
 
   return (
