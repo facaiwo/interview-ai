@@ -1,103 +1,299 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Button, Card } from 'antd';
+import { UserAddOutlined, ClockCircleOutlined, UserOutlined, CalendarOutlined } from '@ant-design/icons';
+import { createStyles } from 'antd-style';
+import { ChatSider, ChatHeader, ChatList, ChatSender } from './components';
+import { CandidateLinkDialog } from './components/CandidateLinkDialog';
+import { CandidateInfoPanel } from './components/CandidateInfoPanel';
+import { Candidate, Application, ConversationType, MessageType } from './components/types';
+import { DEFAULT_CONVERSATIONS } from './components/constants';
+import dayjs from 'dayjs';
+import { InterviewInfoCard } from './components/InterviewInfoCard';
+import { RecordingHistoryPanel } from './components/RecordingHistoryPanel';
+import { Candidate as CandidateType } from './components/types';
+
+const useStyle = createStyles(({ token, css }) => ({
+  layout: css`
+    display: flex;
+    height: 100vh;
+    background: #fff;
+  `,
+  chat: css`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+  `,
+  interviewCard: css`
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    
+    .ant-card-body {
+      padding: 20px;
+    }
+    
+    .interview-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666;
+      
+      .anticon {
+        color: #999;
+      }
+    }
+    
+    .invite-text {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+      color: #666;
+    }
+  `,
+}));
+
+// Mock applications data
+const mockApplications: Application[] = [
+  {
+    id: '1',
+    companyName: '腾讯',
+    position: '前端工程师',
+    applyDate: '2024-03-15',
+    status: 'interviewing',
+    latestProgress: '已通过技术面试，等待HR面试',
+  },
+  {
+    id: '2',
+    companyName: '阿里巴巴',
+    position: '高级前端工程师',
+    applyDate: '2024-03-10',
+    status: 'pending',
+    latestProgress: '简历已投递，等待反馈',
+  },
+];
+
+// Mock candidates data (should match CandidateLinkDialog)
+const mockCandidates: CandidateType[] = [
+  {
+    id: '1',
+    name: '张三',
+    position: '前端工程师',
+    contact: {
+      email: 'zhangsan@example.com',
+      phone: '13800138000',
+    },
+    skills: ['React', 'TypeScript', 'Node.js'],
+    resume: 'https://example.com/resume1.pdf',
+    evaluations: [],
+  },
+  {
+    id: '2',
+    name: '李四',
+    position: '产品经理',
+    contact: {
+      email: 'lisi@example.com',
+      phone: '13800138001',
+    },
+    skills: ['产品设计', '用户研究', '数据分析'],
+    resume: 'https://example.com/resume2.pdf',
+    evaluations: [],
+  },
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { styles } = useStyle();
+  const [messages, setMessages] = useState<MessageType[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [conversations, setConversations] = useState<ConversationType[]>(DEFAULT_CONVERSATIONS);
+  const [curConversation, setCurConversation] = useState(DEFAULT_CONVERSATIONS[0].key);
+  const [showCandidateDialog, setShowCandidateDialog] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [showCandidatePanel, setShowCandidatePanel] = useState(false);
+  const [showRecordingPanel, setShowRecordingPanel] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Load data from localStorage after mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('messages');
+    const savedConversations = localStorage.getItem('conversations');
+    const savedConversation = localStorage.getItem('curConversation');
+
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    }
+    if (savedConversations) {
+      setConversations(JSON.parse(savedConversations));
+    }
+    if (savedConversation) {
+      setCurConversation(savedConversation);
+    }
+  }, []);
+
+  // Save to localStorage when data changes
+  useEffect(() => {
+    localStorage.setItem('messages', JSON.stringify(messages));
+  }, [messages]);
+
+  useEffect(() => {
+    localStorage.setItem('conversations', JSON.stringify(conversations));
+  }, [conversations]);
+
+  useEffect(() => {
+    localStorage.setItem('curConversation', curConversation);
+  }, [curConversation]);
+
+  const hasMessages = messages.length > 0;
+  const currentConversation = conversations.find(c => c.key === curConversation);
+
+  // Add initial message when conversation changes
+  useEffect(() => {
+    if (currentConversation) {
+      const initialMessage: MessageType = {
+        role: 'assistant',
+        content: (
+          <InterviewInfoCard
+            date={dayjs(currentConversation.date).format('YYYY-MM-DD HH:mm')}
+            candidate={currentConversation.candidateName || '未关联'}
+            duration={currentConversation.duration || '未知'}
+            onLinkCandidate={() => setShowCandidateDialog(true)}
+            linked={!!currentConversation.candidateName && currentConversation.candidateName !== '未关联'}
+          />
+        ),
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([initialMessage]);
+    }
+  }, [currentConversation]);
+
+  useEffect(() => {
+    if (
+      currentConversation?.candidateName &&
+      currentConversation.candidateName !== '未关联'
+    ) {
+      const candidate = mockCandidates.find(
+        c => c.name === currentConversation.candidateName
+      );
+      setSelectedCandidate(candidate || null);
+    }
+  }, [currentConversation]);
+
+  const handleConversationChange = (key: string) => {
+    setCurConversation(key);
+  };
+
+  const handleNewConversation = () => {
+    const newConversation: ConversationType = {
+      key: `new-${Date.now()}`,
+      label: '新面试',
+      group: '今天',
+      date: new Date().toISOString(),
+    };
+    setConversations([newConversation, ...conversations]);
+    setCurConversation(newConversation.key);
+  };
+
+  const handleDeleteConversation = (key: string) => {
+    const newConversations = conversations.filter(c => c.key !== key);
+    setConversations(newConversations);
+    if (key === curConversation && newConversations.length > 0) {
+      setCurConversation(newConversations[0].key);
+    }
+  };
+
+  const handleCandidateSelect = (candidate: Candidate) => {
+    setSelectedCandidate(candidate);
+    setShowCandidateDialog(false);
+    setShowCandidatePanel(true);
+  };
+
+  return (
+    <div className={styles.layout} style={{ display: 'flex', flexDirection: 'row', height: '100vh' }}>
+      <ChatSider
+        conversations={conversations}
+        curConversation={curConversation}
+        onConversationChange={handleConversationChange}
+        onNewConversation={handleNewConversation}
+        onDeleteConversation={handleDeleteConversation}
+      />
+
+      <div className={styles.chat} style={{ flex: 1, display: 'flex', flexDirection: 'row', height: '100%' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <ChatHeader
+            title={currentConversation?.label || '新面试'}
+            hasMessages={hasMessages}
+            onLinkCandidate={() => setShowCandidateDialog(true)}
+            onShowRecordingHistory={() => setShowRecordingPanel(!showRecordingPanel)}
+            isRecordingPanelOpen={showRecordingPanel}
+            onShowCandidatePanel={() => setShowCandidatePanel(!showCandidatePanel)}
+            isCandidatePanelOpen={showCandidatePanel}
+          />
+
+          <ChatList messages={messages} loading={loading} />
+
+          <ChatSender
+            inputValue={inputValue}
+            loading={loading}
+            onInputChange={setInputValue}
+            onSubmit={(value) => {
+              if (!value.trim()) return;
+              const newMessage: MessageType = {
+                role: 'user',
+                content: value,
+                timestamp: new Date().toISOString(),
+              };
+              setMessages([...messages, newMessage]);
+              setInputValue('');
+              setLoading(true);
+              // Simulate AI response
+              setTimeout(() => {
+                const aiResponse: MessageType = {
+                  role: 'assistant',
+                  content: '这是一个模拟的AI回复。',
+                  timestamp: new Date().toISOString(),
+                };
+                setMessages(prev => [...prev, aiResponse]);
+                setLoading(false);
+              }, 1000);
+            }}
+            onQuickAction={(action) => {
+              console.log('Quick action:', action);
+            }}
+            hasMessages={hasMessages}
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        {showCandidatePanel && (
+          <CandidateInfoPanel
+            candidate={selectedCandidate || mockCandidates[0]}
+            applications={mockApplications}
+            onClose={() => setShowCandidatePanel(false)}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+        )}
+        {showRecordingPanel && (
+          <RecordingHistoryPanel
+            open={showRecordingPanel}
+            onClose={() => setShowRecordingPanel(false)}
+            candidateName={currentConversation?.candidateName || '未关联'}
+            candidatePosition={''}
+            conversations={conversations}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        )}
+      </div>
+      <CandidateLinkDialog
+        open={showCandidateDialog}
+        onClose={() => setShowCandidateDialog(false)}
+        onSelect={handleCandidateSelect}
+      />
     </div>
   );
 }

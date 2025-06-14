@@ -1,0 +1,43 @@
+# Interview AI Assistant - Cursor Rules
+
+## 项目概述
+这是一个基于 Next.js 14 和 Ant Design X 的猎头顾问 AI 助手项目，专门用于帮助面试官高效完成面试记录和评价总结工作。
+项目目标是做个一个高保真的Demo，不包含后端服务。
+## 技术栈
+- **Framework**: Next.js 14 with App Router
+- **UI Library**: Ant Design 5.x + Ant Design X (AI组件库)
+- **Styling**: Tailwind CSS + antd-style
+- **Language**: TypeScript
+- **State Management**: React Hooks (useState, useEffect)
+- **Date Library**: dayjs
+
+## 
+当一个页面很大的时候，尝试将页面拆分为多个组件，降低代码维护的复杂度。
+
+### React/Next.js
+- 使用函数组件和 React Hooks
+- 优先使用 'use client' 指令处理客户端交互
+- 使用 TypeScript 进行类型定义
+- 组件命名使用 PascalCase
+- 文件命名使用 kebab-case 或 camelCase
+
+### Ant Design X 组件使用
+- 优先使用 @ant-design/x 提供的 AI 相关组件：
+  - `Bubble` - 对话气泡
+  - `Conversations` - 对话列表
+  - `Prompts` - 提示词组件
+  - `Sender` - 消息发送器
+  - `Welcome` - 欢迎页面
+  - `Attachments` - 附件上传
+- 结合 antd 基础组件：Button, Space, Flex, Avatar, Spin 等
+- 使用 antd-style 的 `createStyles` 进行样式定义
+
+
+
+
+
+
+
+
+
+
