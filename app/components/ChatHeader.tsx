@@ -96,10 +96,10 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       </div>
       <Space size={8}>
         <Button className={styles.headerButton} icon={<UserSwitchOutlined />} onClick={onShowCandidatePanel}>
-          {isCandidatePanelOpen ? '收起信息' : '候选人信息'}
+          候选人信息
         </Button>
         <Button className={styles.headerButton} icon={<SoundOutlined />} onClick={onShowRecordingHistory}>
-          {isRecordingPanelOpen ? '收起录音' : '关联录音'}
+          关联录音
         </Button>
       </Space>
     </div>

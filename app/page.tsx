@@ -165,7 +165,7 @@ export default function Home() {
           <InterviewInfoCard
             date={dayjs(currentConversation.date).format('YYYY-MM-DD HH:mm')}
             candidate={currentConversation.candidateName || '未关联'}
-            duration={currentConversation.duration || '未知'}
+            duration={currentConversation.duration || '30分钟'}
             onLinkCandidate={() => setShowCandidateDialog(true)}
             linked={!!currentConversation.candidateName && currentConversation.candidateName !== '未关联'}
           />
@@ -215,6 +215,26 @@ export default function Home() {
     setSelectedCandidate(candidate);
     setShowCandidateDialog(false);
     setShowCandidatePanel(true);
+    // 更新当前会话的候选人信息和面试时长
+    setConversations(prev => prev.map(c =>
+      c.key === curConversation
+        ? {
+            ...c,
+            candidateName: candidate.name,
+            duration: c.duration || '30分钟',
+          }
+        : c
+    ));
+  };
+
+  // --- Panel toggle logic ---
+  const handleShowCandidatePanel = () => {
+    setShowCandidatePanel(true);
+    setShowRecordingPanel(false);
+  };
+  const handleShowRecordingPanel = () => {
+    setShowRecordingPanel(true);
+    setShowCandidatePanel(false);
   };
 
   return (
@@ -233,9 +253,9 @@ export default function Home() {
             title={currentConversation?.label || '新面试'}
             hasMessages={hasMessages}
             onLinkCandidate={() => setShowCandidateDialog(true)}
-            onShowRecordingHistory={() => setShowRecordingPanel(!showRecordingPanel)}
+            onShowRecordingHistory={handleShowRecordingPanel}
             isRecordingPanelOpen={showRecordingPanel}
-            onShowCandidatePanel={() => setShowCandidatePanel(!showCandidatePanel)}
+            onShowCandidatePanel={handleShowCandidatePanel}
             isCandidatePanelOpen={showCandidatePanel}
           />
 
@@ -272,20 +292,44 @@ export default function Home() {
             hasMessages={hasMessages}
           />
         </div>
-        {showCandidatePanel && (
+        {/* Only show one panel at a time */}
+        {showCandidatePanel && !showRecordingPanel && (
           <CandidateInfoPanel
             candidate={selectedCandidate || mockCandidates[0]}
             applications={mockApplications}
             onClose={() => setShowCandidatePanel(false)}
           />
         )}
-        {showRecordingPanel && (
+        {showRecordingPanel && !showCandidatePanel && (
           <RecordingHistoryPanel
             open={showRecordingPanel}
             onClose={() => setShowRecordingPanel(false)}
-            candidateName={currentConversation?.candidateName || '未关联'}
-            candidatePosition={''}
-            conversations={conversations}
+            candidateName={currentConversation?.candidateName || '张三'}
+            candidatePosition={
+              selectedCandidate?.position ||
+              mockCandidates.find(c => c.name === currentConversation?.candidateName)?.position ||
+              '前端工程师'
+            }
+            conversations={[
+              ...conversations,
+              // Demo data for recording history, ensure candidateName matches
+              {
+                key: 'demo-1',
+                label: 'Demo 历史沟通 1',
+                group: '历史',
+                date: '2024-03-10T10:00:00.000Z',
+                candidateName: currentConversation?.candidateName || '张三',
+                duration: '45分钟',
+              },
+              {
+                key: 'demo-2',
+                label: 'Demo 历史沟通 2',
+                group: '历史',
+                date: '2024-02-20T14:00:00.000Z',
+                candidateName: currentConversation?.candidateName || '张三',
+                duration: '30分钟',
+              },
+            ]}
           />
         )}
       </div>

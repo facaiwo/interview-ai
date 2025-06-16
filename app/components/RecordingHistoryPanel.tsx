@@ -1,8 +1,9 @@
-import { Avatar, Tabs } from 'antd';
+import { Avatar, Tabs, Card } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { createStyles } from 'antd-style';
 import { InterviewInfoCard } from './InterviewInfoCard';
 import { ConversationType } from './types';
+import dayjs from 'dayjs';
 
 const useStyle = createStyles(({ token, css }) => ({
   panel: css`
@@ -68,39 +69,31 @@ export function RecordingHistoryPanel({
           <Avatar size={48} icon={<UserOutlined />} />
           <div>
             <div className={styles.candidateName}>{candidateName}</div>
-            <div className={styles.candidatePosition}>{candidatePosition}</div>
+            <div className={styles.candidatePosition}>{candidatePosition || '职位未知'}</div>
           </div>
         </div>
-        <span
-          style={{ cursor: 'pointer', color: '#888', fontSize: 20 }}
-          onClick={onClose}
-        >
-          ×
-        </span>
       </div>
       <div className={styles.content}>
-        <Tabs
-          items={[{
-            key: 'history',
-            label: '历史面试',
-            children: (
-              history.length === 0 ? (
-                <div style={{ color: '#888', marginTop: 32 }}>暂无历史面试记录</div>
-              ) : (
-                history.map((c) => (
-                  <InterviewInfoCard
-                    key={c.key}
-                    date={c.date}
-                    candidate={c.candidateName!}
-                    duration={c.duration || '未知'}
-                    onLinkCandidate={() => {}}
-                    linked={true}
-                  />
-                ))
-              )
-            ),
-          }]}
-        />
+        {history.length === 0 ? (
+          <div style={{ color: '#888', marginTop: 32 }}>暂无沟通记录</div>
+        ) : (
+          history.map((c) => (
+            <Card key={c.key} style={{ marginBottom: 16, padding: 0 }} bodyStyle={{ padding: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div><span style={{ color: '#999' }}>面试时间：</span>{dayjs(c.date).format('YYYY-MM-DD')}</div>
+                <div><span style={{ color: '#999' }}>候选人：</span>{c.candidateName}</div>
+                <div><span style={{ color: '#999' }}>面试时长：</span>{c.duration || '30分钟'}</div>
+              </div>
+              <div style={{ marginTop: 8, background: '#f7f7f8', borderRadius: 6, padding: 8 }}>
+                <div style={{ color: '#222', fontWeight: 500, marginBottom: 2 }}>沟通总结：</div>
+                <div style={{ color: '#555', fontSize: 13, marginBottom: 2 }}>2024-03-10 10:05  面试官：请介绍一下你的项目经验。</div>
+                <div style={{ color: '#555', fontSize: 13, marginBottom: 2 }}>2024-03-10 10:06  候选人：我主要负责了XX系统的前端开发...</div>
+                <div style={{ color: '#555', fontSize: 13, marginBottom: 2 }}>2024-03-10 10:10  面试官：你觉得最大的技术挑战是什么？</div>
+                <div style={{ color: '#555', fontSize: 13 }}>2024-03-10 10:11  候选人：主要是性能优化和团队协作...</div>
+              </div>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );
